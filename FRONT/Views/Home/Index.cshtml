@@ -1,0 +1,535 @@
+﻿@{
+    ViewData["Title"] = "Validador de Facturas";
+}
+
+<style>
+    
+
+    :root {
+        --bg: #F7F8FA;
+        --surface: #FFFFFF;
+        --border: #E2E6EA;
+        --text-primary: #1A1D23;
+        --text-secondary: #6B7280;
+        --accent: #0A5C36;
+        --accent-light: #E6F4ED;
+        --accent-hover: #084D2D;
+        --danger: #DC2626;
+        --danger-light: #FEF2F2;
+        --warning: #D97706;
+        --warning-light: #FFFBEB;
+        --radius: 10px;
+        --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: var(--bg);
+        color: var(--text-primary);
+        min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .sat-header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 0 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        height: 56px;
+    }
+
+    .sat-header .logo {
+        width: 28px;
+        height: 28px;
+        background: var(--accent);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sat-header .logo svg { color: white; }
+
+    .sat-header h1 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .sat-header span {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-left: 0.25rem;
+    }
+
+    /* ── Layout ── */
+    .page-wrap {
+        max-width: 780px;
+        margin: 2.5rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.35rem;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+    }
+
+    /* ── Card ── */
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .card-body { padding: 1.75rem; }
+
+    /* ── Drop Zone ── */
+    .dropzone {
+        border: 2px dashed var(--border);
+        border-radius: 8px;
+        padding: 2.5rem 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+        position: relative;
+    }
+
+    .dropzone:hover,
+    .dropzone.dragover {
+        border-color: var(--accent);
+        background: var(--accent-light);
+    }
+
+    .dropzone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    .dropzone-icon {
+        width: 44px;
+        height: 44px;
+        background: var(--accent-light);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
+
+    .dropzone-icon svg { color: var(--accent); }
+
+    .dropzone-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .dropzone-hint {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    /* ── File preview ── */
+    .file-preview {
+        display: none;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        background: var(--accent-light);
+        border: 1px solid #B7DFC9;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+
+    .file-preview.show { display: flex; }
+
+    .file-preview svg { color: var(--accent); flex-shrink: 0; }
+
+    .file-preview .file-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--accent);
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .file-preview .file-remove {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-secondary);
+        padding: 2px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+    }
+
+    .file-preview .file-remove:hover { color: var(--danger); }
+
+    /* ── Button ── */
+    .btn-validar {
+        width: 100%;
+        margin-top: 1.25rem;
+        padding: 0.75rem;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-validar:hover:not(:disabled) { background: var(--accent-hover); }
+
+    .btn-validar:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        display: none;
+    }
+
+    @@keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Resultado ── */
+    .resultado { margin-top: 1.5rem; display: none; }
+    .resultado.show { display: block; }
+
+    .resultado-header {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .resultado-header h3 {
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    /* Badge */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.25rem 0.65rem;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin-left: auto;
+    }
+
+    .badge.vigente   { background: var(--accent-light); color: var(--accent); }
+    .badge.cancelado { background: var(--danger-light);  color: var(--danger); }
+    .badge.no-encontrado { background: var(--warning-light); color: var(--warning); }
+
+    /* Grid de datos */
+    .datos-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    @@media (max-width: 520px) {
+        .datos-grid { grid-template-columns: 1fr; }
+    }
+
+    .dato-item {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+
+    .dato-item.full { grid-column: 1 / -1; }
+
+    .dato-label {
+        font-size: 0.72rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 0.3rem;
+    }
+
+    .dato-valor {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        word-break: break-all;
+    }
+
+    /* Error */
+    .alerta-error {
+        display: none;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: var(--danger-light);
+        border: 1px solid #FECACA;
+        border-radius: 8px;
+        margin-top: 1.25rem;
+        font-size: 0.875rem;
+        color: var(--danger);
+    }
+
+    .alerta-error.show { display: flex; }
+</style>
+
+<!-- Header -->
+<header class="sat-header">
+    <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z" />
+        </svg>
+    </div>
+    <h1>Validador CFDI <span>— SAT México</span></h1>
+</header>
+
+<!-- Contenido -->
+<div class="page-wrap">
+    <p class="page-title">Verificación de facturas electrónicas</p>
+    <p class="page-subtitle">Sube el archivo XML de tu CFDI para consultar su estado directamente en el SAT.</p>
+
+    <div class="card">
+        <div class="card-body">
+
+            <!-- Drop zone -->
+            <div class="dropzone" id="dropzone">
+                <input type="file" id="inputArchivo" accept=".xml" />
+                <div class="dropzone-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                        <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z" />
+                    </svg>
+                </div>
+                <p class="dropzone-label">Arrastra tu XML aquí o haz clic para seleccionarlo</p>
+                <p class="dropzone-hint">Solo archivos .xml de CFDI 4.0</p>
+            </div>
+
+            <!-- Preview del archivo seleccionado -->
+            <div class="file-preview" id="filePreview">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z" />
+                </svg>
+                <span class="file-name" id="fileName"></span>
+                <button class="file-remove" id="btnRemove" title="Quitar archivo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Botón -->
+            <button class="btn-validar" id="btnValidar" disabled>
+                <div class="spinner" id="spinner"></div>
+                <span id="btnTexto">Validar factura</span>
+            </button>
+
+            <!-- Error -->
+            <div class="alerta-error" id="alertaError">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" style="flex-shrink:0;margin-top:1px">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z" />
+                </svg>
+                <span id="errorMsg"></span>
+            </div>
+
+            <!-- Resultado -->
+            <div class="resultado" id="resultado">
+                <div class="resultado-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z" />
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    </svg>
+                    <h3>Resultado de la validación</h3>
+                    <span class="badge" id="badgeEstado"></span>
+                </div>
+
+                <div class="datos-grid">
+                    <div class="dato-item full">
+                        <p class="dato-label">UUID / Folio Fiscal</p>
+                        <p class="dato-valor" id="resUUID">—</p>
+                    </div>
+                    <div class="dato-item">
+                        <p class="dato-label">RFC Emisor</p>
+                        <p class="dato-valor" id="resEmisor">—</p>
+                    </div>
+                    <div class="dato-item">
+                        <p class="dato-label">RFC Receptor</p>
+                        <p class="dato-valor" id="resReceptor">—</p>
+                    </div>
+                    <div class="dato-item">
+                        <p class="dato-label">Total</p>
+                        <p class="dato-valor" id="resTotal">—</p>
+                    </div>
+                    <div class="dato-item">
+                        <p class="dato-label">Estado SAT</p>
+                        <p class="dato-valor" id="resEstadoSAT">—</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://localhost:7018/api/facturas/validar"; 
+
+    const input       = document.getElementById("inputArchivo");
+    const dropzone    = document.getElementById("dropzone");
+    const filePreview = document.getElementById("filePreview");
+    const fileName    = document.getElementById("fileName");
+    const btnRemove   = document.getElementById("btnRemove");
+    const btnValidar  = document.getElementById("btnValidar");
+    const btnTexto    = document.getElementById("btnTexto");
+    const spinner     = document.getElementById("spinner");
+    const resultado   = document.getElementById("resultado");
+    const alertaError = document.getElementById("alertaError");
+
+    // ── Drag & Drop ──────────────────────────────────────────
+    dropzone.addEventListener("dragover",  e => { e.preventDefault(); dropzone.classList.add("dragover"); });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+    dropzone.addEventListener("drop", e => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+        const file = e.dataTransfer.files[0];
+        if (file) setFile(file);
+    });
+
+    input.addEventListener("change", () => {
+        if (input.files[0]) setFile(input.files[0]);
+    });
+
+    function setFile(file) {
+        if (!file.name.endsWith(".xml")) {
+            mostrarError("El archivo debe ser un .xml de CFDI.");
+            return;
+        }
+        fileName.textContent  = file.name;
+        filePreview.classList.add("show");
+        btnValidar.disabled   = false;
+        ocultarError();
+        resultado.classList.remove("show");
+    }
+
+    btnRemove.addEventListener("click", () => {
+        input.value           = "";
+        filePreview.classList.remove("show");
+        btnValidar.disabled   = true;
+        resultado.classList.remove("show");
+        ocultarError();
+    });
+
+    // ── Validar ──────────────────────────────────────────────
+    btnValidar.addEventListener("click", async () => {
+        const file = input.files[0];
+        if (!file) return;
+
+        setCargando(true);
+        ocultarError();
+        resultado.classList.remove("show");
+
+        const formData = new FormData();
+        formData.append("archivo", file);
+
+        try {
+            const res = await fetch(API_URL, { method: "POST", body: formData });
+
+            if (!res.ok) {
+                const msg = await res.text();
+                throw new Error(msg || `Error ${res.status}`);
+            }
+
+            const data = await res.json();
+            mostrarResultado(data);
+
+        } catch (err) {
+            mostrarError(err.message || "No se pudo conectar con la API.");
+        } finally {
+            setCargando(false);
+        }
+    });
+
+    // ── Helpers ──────────────────────────────────────────────
+    function mostrarResultado(data) {
+        document.getElementById("resUUID").textContent     = data.uuid      || "—";
+        document.getElementById("resEmisor").textContent   = data.rfcEmisor  || "—";
+        document.getElementById("resReceptor").textContent = data.rfcReceptor || "—";
+        document.getElementById("resTotal").textContent    = data.total != null
+            ? `$${Number(data.total).toLocaleString("es-MX", { minimumFractionDigits: 2 })}`
+            : "—";
+        document.getElementById("resEstadoSAT").textContent = data.estadoSAT || "—";
+
+        // Badge
+        const badge   = document.getElementById("badgeEstado");
+        const estadoRaw = (data.estadoSAT || "").toLowerCase();
+        badge.className = "badge";
+
+        if (estadoRaw.includes("vigente")) {
+            badge.textContent = "✓ Vigente";
+            badge.classList.add("vigente");
+        } else if (estadoRaw.includes("cancelado")) {
+            badge.textContent = "✕ Cancelado";
+            badge.classList.add("cancelado");
+        } else {
+            badge.textContent = "⚠ No encontrado";
+            badge.classList.add("no-encontrado");
+        }
+
+        resultado.classList.add("show");
+    }
+
+    function setCargando(loading) {
+        btnValidar.disabled    = loading;
+        spinner.style.display  = loading ? "block" : "none";
+        btnTexto.textContent   = loading ? "Consultando SAT..." : "Validar factura";
+    }
+
+    function mostrarError(msg) {
+        document.getElementById("errorMsg").textContent = msg;
+        alertaError.classList.add("show");
+    }
+
+    function ocultarError() {
+        alertaError.classList.remove("show");
+    }
+</script>

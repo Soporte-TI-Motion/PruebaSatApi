@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FRONT/FRONT.csproj" Id="6500c722-1931-4983-b77d-1b236d6a26ba" />
+  <Project Path="SNE_FacturasValidadas_XML/SNE_FacturasValidadas_XML.csproj" />
+</Solution>
